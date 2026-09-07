@@ -17,6 +17,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pickle
+
 
 from sklearn.model_selection import train_test_split, cross_val_score, StratifiedKFold
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
@@ -243,6 +245,13 @@ def main():
     df = load_data(args.data)
     X, y, numeric_cols, categorical_cols = prepare_features(df)
     results, pipelines, X_test, y_test, label_names = run_experiment(X, y, numeric_cols, categorical_cols)
+    # Save each trained pipeline (preprocessing + model together) so the
+    # UI/dashboard can load them later without retraining.
+    for name, pipe in pipelines.items():
+        filename = f"models/{name.replace(' ', '_').lower()}_model.pkl"
+        with open(filename, "wb") as f:
+            pickle.dump(pipe, f)
+        print(f"Saved {name} pipeline to {filename}")
     plot_results(results, y_test, label_names, out_path=args.out)
 
     # Final summary table
