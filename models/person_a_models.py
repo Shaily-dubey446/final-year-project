@@ -11,6 +11,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pickle
 
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
@@ -112,7 +113,7 @@ def evaluate_model(name, model, X_tr, X_te, y_tr, y_te):
 
 # ---- Model 1: Logistic Regression ----
 log_reg = LogisticRegression(max_iter=1000, random_state=42)
-evaluate_model("Logistic Regression", log_reg, X_train_scaled, X_test_scaled, y_train, y_test)
+log_reg = evaluate_model("Logistic Regression", log_reg, X_train_scaled, X_test_scaled, y_train, y_test)
 
 # ---- Model 2: Decision Tree ----
 dec_tree = DecisionTreeClassifier(max_depth=8, random_state=42)
@@ -140,5 +141,22 @@ plt.title("Model Comparison - Person A")
 plt.ylim(0,1)
 plt.savefig("models/person_a_comparison.png")
 plt.show()
+with open("models/logistic_regression_model.pkl", "wb") as f:
+    pickle.dump(log_reg, f)
+
+with open("models/decision_tree_model.pkl", "wb") as f:
+    pickle.dump(dec_tree, f)
+
+with open("models/knn_model.pkl", "wb") as f:
+    pickle.dump(knn, f)
+
+with open("models/person_a_scaler.pkl", "wb") as f:
+    pickle.dump(scaler, f)
+
+with open("models/person_a_label_encoders.pkl", "wb") as f:
+    pickle.dump(label_encoders, f)
+
+with open("models/person_a_feature_columns.pkl", "wb") as f:
+    pickle.dump(X.columns.tolist(), f)
 
 print("\nDone! Confusion matrix images and comparison chart saved in 'models/' folder.")
