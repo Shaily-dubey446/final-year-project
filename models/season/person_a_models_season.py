@@ -331,11 +331,11 @@ with open(
     pickle.dump(knn, f)
 
 with open(
-    "models/season/scaler_season.pkl",
+    "models/season/person_a_scaler_season.pkl",
     "wb"
 ) as f:
     pickle.dump(scaler, f)
-
+    
 with open(
     "models/season/person_a_label_encoders_season.pkl",
     "wb"
