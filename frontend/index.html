@@ -1,0 +1,2615 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AvianGuard &middot; Aviation &amp; Wind Infrastructure Risk Platform</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans (Brand/UI) & IBM Plex Mono (Telemetry) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Leaflet & Chart.js -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            /* Natural Organic Human-Centric Palette: Warm Charcoal, Sand, Sage Green & Amber */
+            --canvas: #121417;
+            --surface: #1B1E24;
+            --surface-elevated: #242932;
+            --surface-hover: #2E3440;
+            --border: #2A303C;
+            --border-light: #3D4454;
+
+            --text-title: #FAF9F6;
+            --text-body: #E5E7EB;
+            --text-muted: #9CA3AF;
+            --text-dim: #6B7280;
+
+            --brand-primary: #3884FF;
+            --brand-primary-hover: #2563EB;
+            --brand-indigo: #6366F1;
+            --brand-emerald: #10B981;
+            --brand-amber: #EAB308;
+            --brand-rose: #F43F5E;
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --radius-pill: 9999px;
+
+            --shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.4);
+            --shadow-elevated: 0 12px 36px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--canvas);
+            color: var(--text-body);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .mono {
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Container Structure */
+        .app-shell {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 0 32px;
+        }
+
+        /* Floating Modern Rounded Pill Navigation */
+        .nav-wrapper {
+            position: sticky;
+            top: 18px;
+            z-index: 1000;
+            padding: 0 16px;
+            margin-bottom: 32px;
+        }
+
+        .nav-floating-pill {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(27, 30, 36, 0.88);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-pill);
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            box-shadow: var(--shadow-elevated);
+            transition: border-color 0.2s ease;
+        }
+
+        .nav-floating-pill:hover {
+            border-color: var(--border-light);
+        }
+
+        .brand-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 17px;
+            letter-spacing: -0.02em;
+            color: var(--text-title);
+        }
+
+        .brand-badge-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-indigo));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
+            font-size: 13px;
+        }
+
+        .nav-menu-links {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+            font-size: 13.5px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .nav-menu-links a {
+            transition: color 0.15s ease;
+            padding: 6px 12px;
+            border-radius: var(--radius-pill);
+        }
+
+        .nav-menu-links a:hover {
+            color: var(--text-title);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-pill {
+            background: var(--surface-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-title);
+            padding: 7px 16px;
+            border-radius: var(--radius-pill);
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-pill:hover {
+            background: var(--surface-hover);
+            border-color: var(--border-light);
+            color: var(--brand-primary);
+        }
+
+        .btn-primary-pill {
+            background: var(--brand-primary);
+            border-color: var(--brand-primary);
+            color: #FFFFFF;
+        }
+
+        .btn-primary-pill:hover {
+            background: var(--brand-primary-hover);
+            color: #FFFFFF;
+        }
+
+        .live-status-pill {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--brand-emerald);
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            padding: 5px 12px;
+            border-radius: var(--radius-pill);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .live-status-pill .indicator-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--brand-emerald);
+        }
+
+        @media(max-width: 1024px) {
+            .nav-menu-links {
+                display: none;
+            }
+        }
+
+        /* Hero Banner */
+        .hero-banner {
+            padding: 48px 0 40px 0;
+        }
+
+        .hero-heading {
+            font-size: 46px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            color: var(--text-title);
+            max-width: 820px;
+            margin-bottom: 16px;
+        }
+
+        .hero-subheading {
+            font-size: 16.5px;
+            color: var(--text-muted);
+            max-width: 720px;
+            line-height: 1.65;
+            margin-bottom: 36px;
+        }
+
+        /* 4-Metric Grid */
+        .metric-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 48px;
+        }
+
+        @media(max-width: 900px) {
+            .metric-cards-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .metric-tile {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 22px;
+            transition: all 0.2s ease;
+        }
+
+        .metric-tile:hover {
+            border-color: var(--border-light);
+            background: var(--surface-elevated);
+        }
+
+        .metric-tile .tile-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+        }
+
+        .metric-tile .tile-value {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-title);
+        }
+
+        .metric-tile .tile-desc {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Section Layouts */
+        .content-section {
+            padding: 64px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .section-header-block {
+            margin-bottom: 28px;
+        }
+
+        .section-badge-tag {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--brand-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 6px;
+            display: inline-block;
+        }
+
+        .section-main-title {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text-title);
+            margin-bottom: 8px;
+        }
+
+        .section-lead-text {
+            font-size: 15px;
+            color: var(--text-muted);
+            max-width: 720px;
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 20px;
+        }
+
+        @media(max-width: 960px) {
+            .grid-2col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .grid-3col {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        @media(max-width: 960px) {
+            .grid-3col {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-box {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 26px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .panel-title-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-title);
+        }
+
+        .panel-subtitle-text {
+            font-size: 12.5px;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        /* Segmented Filter Pills */
+        .filter-segmented-pill {
+            display: inline-flex;
+            background: var(--canvas);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-pill);
+            padding: 3px;
+            gap: 2px;
+        }
+
+        .filter-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: var(--radius-pill);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .filter-btn.active {
+            background: var(--brand-primary);
+            color: #FFFFFF;
+        }
+
+        /* Map GIS Container */
+        #map-container {
+            height: 500px;
+            width: 100%;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: #0D1322;
+        }
+
+        .map-telemetry-strip {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-top: 16px;
+        }
+
+        @media(max-width: 800px) {
+            .map-telemetry-strip {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .telemetry-cell {
+            background: var(--surface-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+        }
+
+        .telemetry-cell .cell-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .telemetry-cell .cell-value {
+            font-size: 14.5px;
+            font-weight: 600;
+            color: var(--text-title);
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Data Tables */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table.enterprise-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            text-align: left;
+        }
+
+        table.enterprise-table th {
+            padding: 12px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.enterprise-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        table.enterprise-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-title);
+        }
+
+        table.enterprise-table td.cell-highlight {
+            color: var(--text-title);
+            font-weight: 600;
+        }
+
+        /* Status Badges */
+        .status-badge-chip {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: var(--radius-pill);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-badge-chip.low {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--brand-emerald);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-badge-chip.medium {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--brand-amber);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-badge-chip.high {
+            background: rgba(244, 63, 94, 0.1);
+            color: var(--brand-rose);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        /* Simulator Console */
+        .simulator-split {
+            display: grid;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 32px;
+        }
+
+        @media(max-width: 960px) {
+            .simulator-split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .control-group label .numeric-feedback {
+            color: var(--brand-primary);
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+        }
+
+        select.form-input-field,
+        input[type=text].form-input-field {
+            width: 100%;
+            background: var(--canvas);
+            border: 1px solid var(--border);
+            color: var(--text-title);
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 13.5px;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+
+        select.form-input-field:focus,
+        input.form-input-field:focus {
+            border-color: var(--brand-primary);
+        }
+
+        input[type=range].form-range-slider {
+            width: 100%;
+            -webkit-appearance: none;
+            height: 5px;
+            background: var(--surface-elevated);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type=range].form-range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--brand-primary);
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+            transition: transform 0.15s ease;
+        }
+
+        input[type=range].form-range-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+
+        /* Meter Display */
+        .meter-readout-card {
+            background: var(--surface-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .meter-score-number {
+            font-size: 54px;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            margin-top: -110px;
+            color: var(--text-title);
+        }
+
+        .meter-severity-label {
+            font-size: 12.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 4px;
+        }
+
+        /* Model Comparison Grid */
+        .model-cards-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .model-tile-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .model-tile-card:hover,
+        .model-tile-card.active {
+            border-color: var(--brand-primary);
+            background: var(--surface-elevated);
+        }
+
+        .model-tile-card .model-name {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-title);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .model-tile-card .model-f1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--brand-primary);
+            margin-top: 8px;
+        }
+
+        .model-tile-card .model-meta {
+            font-size: 11.5px;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        /* Advisory Items */
+        .advisory-row-card {
+            display: grid;
+            grid-template-columns: 64px 1fr auto;
+            gap: 18px;
+            align-items: center;
+            padding: 16px 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            margin-bottom: 12px;
+            transition: border-color 0.15s ease;
+        }
+
+        .advisory-row-card:hover {
+            border-color: var(--border-light);
+        }
+
+        .advisory-days-badge {
+            text-align: center;
+            background: var(--surface-elevated);
+            border-radius: var(--radius-sm);
+            padding: 8px 4px;
+        }
+
+        .advisory-days-badge .n {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--brand-primary);
+        }
+
+        .advisory-days-badge .u {
+            font-size: 9.5px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        /* Footer */
+        footer.app-footer {
+            padding: 64px 0 72px 0;
+            background: #060910;
+            border-top: 1px solid var(--border);
+            font-size: 13px;
+        }
+
+        .footer-grid-layout {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        @media(max-width: 900px) {
+            .footer-grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .footer-brand-summary h4 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-title);
+            margin-bottom: 8px;
+        }
+
+        .footer-brand-summary p {
+            color: var(--text-muted);
+            line-height: 1.65;
+            max-width: 440px;
+        }
+
+        .footer-column h5 {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-dim);
+            margin-bottom: 12px;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column li {
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        .footer-column a:hover {
+            color: var(--text-title);
+        }
+
+        .footer-bottom-bar {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 24px;
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-dim);
+            font-size: 12px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        /* Chart Canvas Containers */
+        .chart-box {
+            position: relative;
+            width: 100%;
+            height: 280px;
+        }
+
+        .chart-box-sm {
+            position: relative;
+            width: 100%;
+            height: 180px;
+        }
+    </style>
+</head>
+
+    <!-- Role Login & Auth Modal -->
+    <div id="auth-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(10px);z-index:9999;align-items:center;justify-content:center;">
+        <div style="background:var(--surface);border:1px solid var(--border-light);border-radius:var(--radius-lg);max-width:440px;width:90%;padding:28px;box-shadow:var(--shadow-elevated);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <div style="display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--text-title);">
+                    <i class="fa-solid fa-shield-halved" style="color:var(--brand-primary);"></i>
+                    Role-Based Access Login
+                </div>
+                <button onclick="closeAuthModal()" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer;">&times;</button>
+            </div>
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;line-height:1.5;">
+                Select a demo persona or enter system credentials to test Role-Based Access Control (RBAC) security enforcement.
+            </p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;">
+                <button type="button" class="btn-pill" style="justify-content:center;" onclick="fillDemoLogin('admin', 'admin123')">👑 Admin</button>
+                <button type="button" class="btn-pill" style="justify-content:center;" onclick="fillDemoLogin('airport_officer', 'airport123')">✈️ Airport Auth</button>
+                <button type="button" class="btn-pill" style="justify-content:center;" onclick="fillDemoLogin('wind_operator', 'wind123')">⚡ Wind Operator</button>
+                <button type="button" class="btn-pill" style="justify-content:center;" onclick="fillDemoLogin('public', 'public123')">🌐 Public Guest</button>
+            </div>
+            <div style="margin-bottom:12px;">
+                <label style="font-size:12px;font-weight:600;color:var(--text-dim);display:block;margin-bottom:4px;">Username</label>
+                <input type="text" id="login-username" class="form-input-field" placeholder="e.g. admin">
+            </div>
+            <div style="margin-bottom:20px;">
+                <label style="font-size:12px;font-weight:600;color:var(--text-dim);display:block;margin-bottom:4px;">Password</label>
+                <input type="password" id="login-password" class="form-input-field" placeholder="••••••••">
+            </div>
+            <div id="login-error-msg" style="display:none;color:var(--brand-rose);font-size:12px;margin-bottom:12px;"></div>
+            <div style="display:flex;gap:10px;">
+                <button type="button" onclick="submitLogin()" class="btn-pill btn-primary-pill" style="flex:1;justify-content:center;">
+                    <i class="fa-solid fa-right-to-bracket"></i> Authenticate
+                </button>
+                <button type="button" onclick="logoutUser()" class="btn-pill" style="justify-content:center;">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Rounded Header Navigation -->
+    <div class="nav-wrapper">
+        <header class="nav-floating-pill">
+            <div class="brand-cluster">
+                <div class="brand-badge-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <span>AvianGuard AI</span>
+            </div>
+            <nav class="nav-menu-links">
+                <a href="#geospatial">GIS Telemetry</a>
+                <a href="#seasonality">Seasonal Pulse</a>
+                <a href="#facilities">Infrastructure</a>
+                <a href="#species">Ecological Index</a>
+                <a href="#simulator">Risk Simulator</a>
+                <a href="#models">ML Benchmarks</a>
+                <a href="#advisory">Early Warning</a>
+                <a href="#records">Flight Logs</a>
+            </nav>
+            <div class="nav-actions">
+                <button type="button" onclick="openAuthModal()" class="btn-pill" id="user-role-badge">
+                    <i class="fa-solid fa-user-shield" style="color:var(--brand-primary);"></i>
+                    <span id="current-user-label">Role: Public Viewer</span>
+                </button>
+                <a href="/api/report/pdf?role=Executive%20Leadership" target="_blank" class="btn-pill" id="btn-export-pdf">
+                    <i class="fa-solid fa-file-pdf"></i> Export PDF
+                </a>
+                <div class="live-status-pill">
+                    <span class="indicator-dot"></span>
+                    <span id="header-status-indicator">SYSTEM ONLINE</span>
+                </div>
+            </div>
+        </header>
+    </div>
+
+    <div class="app-shell">
+        <!-- Hero Section -->
+        <section class="hero-banner">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:20px;">
+                <div>
+                    <div class="hero-heading">Aviation &amp; Wind Infrastructure Wildlife Collision Intelligence</div>
+                    <div class="hero-subheading">AvianGuard is an empirical aeroecology intelligence matrix providing calibrated
+                        collision risk classification across North American flight corridors. Powered by 56,978 verified
+                        incident records and multi-model machine learning pipelines.</div>
+                </div>
+                <!-- Admin Retraining Trigger Card -->
+                <div id="admin-retrain-panel" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 20px;max-width:320px;">
+                    <div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--text-title);margin-bottom:6px;">
+                        <i class="fa-solid fa-rotate" style="color:var(--brand-primary);"></i>
+                        Continuous ML Retraining
+                    </div>
+                    <p style="font-size:11.5px;color:var(--text-muted);line-height:1.4;margin-bottom:12px;">
+                        Trigger automated asynchronous pipeline retraining with fresh telemetry and dataset snapshots.
+                    </p>
+                    <button type="button" onclick="triggerModelRetraining()" id="btn-retrain" class="btn-pill btn-primary-pill" style="width:100%;justify-content:center;font-size:12px;">
+                        <i class="fa-solid fa-play"></i> Trigger Pipeline Retrain
+                    </button>
+                    <div id="retrain-feedback" style="display:none;font-size:11px;margin-top:8px;font-family:'IBM Plex Mono',monospace;"></div>
+                </div>
+            </div>
+
+            <!-- Top 4-Metric Grid -->
+            <div class="metric-cards-grid">
+                <div class="metric-tile">
+                    <div class="tile-label">Verified Incident Records</div>
+                    <div class="tile-value mono" id="kpi-total">2,979</div>
+                    <div class="tile-desc">Logged FAA &amp; USGS historical collisions</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="tile-label">High Severity Ratio</div>
+                    <div class="tile-value mono" id="kpi-fatal" style="color:var(--brand-rose)">56.9%</div>
+                    <div class="tile-desc">Fatal &amp; airframe damage incidence rate</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="tile-label">Nocturnal Migrants</div>
+                    <div class="tile-value mono" id="kpi-night">45.5%</div>
+                    <div class="tile-desc">Collisions logged between dusk and dawn</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="tile-label">Monitored Facilities</div>
+                    <div class="tile-value mono" id="kpi-sites">7,708</div>
+                    <div class="tile-desc">Active airports and wind turbine clusters</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Geospatial GIS Telemetry Map -->
+        <section class="content-section" id="geospatial">
+            <div class="section-header-block">
+                <span class="section-badge-tag">Geospatial Intelligence</span>
+                <h2 class="section-main-title">Satellite Migration Corridor &amp; Asset Hotspots</h2>
+                <p class="section-lead-text">Interactive GIS telemetry tracking high-frequency strike zones across North
+                    American flyways. Click anywhere on the map to compute real-time proximity telemetry and trigger
+                    predictive model inference.</p>
+            </div>
+
+            <div class="panel-box" style="padding: 16px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:12px;font-weight:700;color:var(--text-dim);text-transform:uppercase;">Map Layers:</span>
+                        <button type="button" class="filter-btn active" id="layer-incidents" onclick="toggleMapLayer('incidents')">🔴 Strikes</button>
+                        <button type="button" class="filter-btn active" id="layer-turbines" onclick="toggleMapLayer('turbines')">⚡ Turbines</button>
+                        <button type="button" class="filter-btn active" id="layer-airports" onclick="toggleMapLayer('airports')">✈️ Airports</button>
+                        <button type="button" class="filter-btn active" id="layer-flyways" onclick="toggleMapLayer('flyways')">🦅 Migration Flyways</button>
+                        <button type="button" class="filter-btn active" id="layer-habitats" onclick="toggleMapLayer('habitats')">🛰️ Satellite NDVI Habitats</button>
+                    </div>
+                    <div style="font-size:11.5px;color:var(--brand-emerald);font-family:'IBM Plex Mono',monospace;">
+                        <i class="fa-solid fa-circle" style="font-size:8px;"></i> LIVE GIS SYNC
+                    </div>
+                </div>
+                <div id="map-container"></div>
+                <div class="map-telemetry-strip">
+                    <div class="telemetry-cell">
+                        <div class="cell-label">Selected Target</div>
+                        <div class="cell-value mono" id="tel-coords">39.50&deg;N, 98.35&deg;W</div>
+                    </div>
+                    <div class="telemetry-cell">
+                        <div class="cell-label">Nearest Airport</div>
+                        <div class="cell-value" id="tel-apt">Grand Island Arpt (GRI)</div>
+                    </div>
+                    <div class="telemetry-cell">
+                        <div class="cell-label">Airport Proximity</div>
+                        <div class="cell-value mono" id="tel-apt-dist">6.0 km</div>
+                    </div>
+                    <div class="telemetry-cell">
+                        <div class="cell-label">Turbine Cluster Proximity</div>
+                        <div class="cell-value mono" id="tel-turb-dist">15.0 km</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Seasonal Migration Pulse (Chart.js Modern Visuals) -->
+        <section class="content-section" id="seasonality">
+            <div class="section-header-block">
+                <span class="section-badge-tag">Temporal Analysis</span>
+                <h2 class="section-main-title">Seasonal Migration Waves &amp; Diurnal Intensity</h2>
+                <p class="section-lead-text">Collision probability spikes predictably during spring (Apr&ndash;May) and
+                    fall (Sep&ndash;Oct) migration pulses. The charts below display multi-year aggregates rendered via
+                    Chart.js.</p>
+            </div>
+
+            <div class="grid-2col">
+                <div class="panel-box">
+                    <div class="panel-header">
+                        <div>
+                            <div class="panel-title-text">Monthly Incident Volume</div>
+                            <div class="panel-subtitle-text">Total strike frequency and fatal incident tracking</div>
+                        </div>
+                        <div class="filter-segmented-pill" id="season-toggle">
+                            <button data-mode="all" class="filter-btn active">All Sites</button>
+                            <button data-mode="airport" class="filter-btn">Airports</button>
+                            <button data-mode="wind_farm" class="filter-btn">Wind Farms</button>
+                        </div>
+                    </div>
+                    <div class="chart-box">
+                        <canvas id="seasonMonthlyChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="panel-box">
+                    <div class="panel-header">
+                        <div>
+                            <div class="panel-title-text">Flyway Distribution</div>
+                            <div class="panel-subtitle-text">Atlantic vs. Central flyway corridor share</div>
+                        </div>
+                    </div>
+                    <div class="chart-box">
+                        <canvas id="flywayRadarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-box" style="margin-top:20px;">
+                <div class="panel-header">
+                    <div>
+                        <div class="panel-title-text">24-Hour Diurnal Cycle</div>
+                        <div class="panel-subtitle-text">Hourly collision distribution illustrating nocturnal migrant
+                            peaks between 21:00 and 05:00 UTC</div>
+                    </div>
+                </div>
+                <div class="chart-box-sm">
+                    <canvas id="diurnalHourlyChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Facilities & Infrastructure -->
+        <section class="content-section" id="facilities">
+            <div class="section-header-block">
+                <span class="section-badge-tag">Infrastructure Risk</span>
+                <h2 class="section-main-title">Facility Risk Ranking &amp; Sector Comparison</h2>
+                <p class="section-lead-text">Wind turbine facilities log higher lethality rates due to rotor-sweep
+                    overlap with low-altitude nocturnal flight paths, while airports experience greater total incident
+                    volume.</p>
+            </div>
+
+            <div class="grid-2col">
+                <div class="panel-box">
+                    <div class="panel-header">
+                        <div>
+                            <div class="panel-title-text">Top Facilities by Incident Frequency</div>
+                            <div class="panel-subtitle-text">Monitored aviation and renewable installations</div>
+                        </div>
+                    </div>
+                    <div id="facility-bars-container"></div>
+                </div>
+
+                <div class="panel-box">
+                    <div class="panel-header">
+                        <div>
+                            <div class="panel-title-text">Sector Distribution</div>
+                            <div class="panel-subtitle-text">Commercial Airport vs. Wind Farm split</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:24px;height:240px;">
+                        <div style="width:160px;height:160px;flex-shrink:0;">
+                            <canvas id="sectorDonutChart"></canvas>
+                        </div>
+                        <div style="flex:1;font-size:13px;color:var(--text-muted);">
+                            <div
+                                style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                                <span style="color:var(--brand-primary);font-weight:600;">● Commercial Airports</span>
+                                <span class="mono">26,500 (37.2% fatal)</span>
+                            </div>
+                            <div
+                                style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+                                <span style="color:var(--brand-amber);font-weight:600;">● Wind Energy Turbines</span>
+                                <span class="mono">30,478 (52.2% fatal)</span>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;padding:8px 0;">
+                                <span>Avg Wind at Strike</span>
+                                <span class="mono">14.3 km/h (Turbines)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-box" style="margin-top:20px;padding:0;overflow:hidden;">
+                <div style="padding: 20px 24px 14px 24px;border-bottom:1px solid var(--border);">
+                    <div class="panel-title-text">Monitored Facilities Directory</div>
+                    <div class="panel-subtitle-text">Operational specifications, historical incidents, and fatality
+                        ratios</div>
+                </div>
+                <div class="table-container">
+                    <table class="enterprise-table" id="facility-table">
+                        <thead>
+                            <tr>
+                                <th>Facility Name</th>
+                                <th>Sector Type</th>
+                                <th>Flyway</th>
+                                <th>Incidents</th>
+                                <th>Fatalities</th>
+                                <th>Fatality Rate</th>
+                                <th>Operational Scope</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Species Ecological Index -->
+        <section class="content-section" id="species">
+            <div class="section-header-block">
+                <span class="section-badge-tag">Biodiversity Impact</span>
+                <h2 class="section-main-title">Species Ecological Severity Matrix</h2>
+                <p class="section-lead-text">Raw strike counts alone obscure the true ecological cost. The weighted
+                    index multiplies frequency against IUCN Red List conservation statuses to elevate alerts for
+                    vulnerable wildlife.</p>
+            </div>
+
+            <div class="panel-box">
+                <div class="panel-header">
+                    <div>
+                        <div class="panel-title-text">Conservation Status Weighted Leaderboard</div>
+                        <div class="panel-subtitle-text">Toggle between raw incident frequency and status-weighted
+                            conservation impact</div>
+                    </div>
+                    <div class="filter-segmented-pill" id="species-toggle">
+                        <button data-mode="weighted" class="filter-btn active">Weighted Severity</button>
+                        <button data-mode="count" class="filter-btn">Raw Incident Count</button>
+                    </div>
+                </div>
+                <div id="species-bars-container"></div>
+            </div>
+        </section>
+
+        <!-- Environmental Covariates -->
+        <section class="content-section">
+            <div class="section-header-block">
+                <span class="section-badge-tag">Atmospheric Factors</span>
+                <h2 class="section-main-title">Meteorological &amp; Weather Risk Covariates</h2>
+                <p class="section-lead-text">Statistical impact analysis of atmospheric conditions on collision
+                    likelihood and fatality severity.</p>
+            </div>
+
+            <div class="grid-3col" id="correlation-cards-container"></div>
+        </section>
+
+        <!-- Live Risk Simulator -->
+        <section class="content-section" id="simulator">
+            <div class="section-header-block">
+                <span class="section-badge-tag">Predictive Inference</span>
+                <h2 class="section-main-title">Real-Time Collision Risk Simulator</h2>
+                <p class="section-lead-text">Configure operational flight parameters, meteorological conditions, and ML
+                    classification pipelines to generate instant risk classifications and SOP advisories.</p>
+            </div>
+
+            <div class="panel-box">
+                <div class="simulator-split">
+                    <div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div class="control-group">
+                                <label>Model Pipeline</label>
+                                <select id="in-model" class="form-input-field">
+                                    <option value="Decision Tree" selected>Decision Tree (83.84% Overall)</option>
+                                    <option value="Logistic Regression">Logistic Regression (77.24% Overall)</option>
+                                    <option value="XGBoost">XGBoost (71.97% Overall)</option>
+                                    <option value="Gradient Boosting">Gradient Boosting (70.56% Overall)</option>
+                                    <option value="KNN">KNN (68.94% Overall)</option>
+                                    <option value="Random Forest">Random Forest (67.77% Overall)</option>
+                                    <option value="MLP Classifier">MLP Classifier (62.59% Overall)</option>
+                                    <option value="SVM">SVM (62.23% Overall)</option>
+                                    <option value="Naive Bayes">Naive Bayes (52.10% Overall)</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>Season</label>
+                                <select id="in-season" class="form-input-field">
+                                    <option value="Spring_Migration" selected>Spring Migration (Peak)</option>
+                                    <option value="Fall_Migration">Fall Migration (Peak)</option>
+                                    <option value="Summer_Breeding">Summer Breeding</option>
+                                    <option value="Winter">Winter Season</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div class="control-group">
+                                <label>Flight Altitude <span class="numeric-feedback" id="lbl-alt">1,200
+                                        ft</span></label>
+                                <input type="range" id="in-alt" class="form-range-slider" min="50" max="10000" step="50"
+                                    value="1200">
+                            </div>
+                            <div class="control-group">
+                                <label>Aircraft Speed <span class="numeric-feedback" id="lbl-speed">150
+                                        kts</span></label>
+                                <input type="range" id="in-speed" class="form-range-slider" min="40" max="450" step="10"
+                                    value="150">
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>Diurnal Period</label>
+                            <div class="filter-segmented-pill" id="in-daynight" style="width:100%;display:flex;">
+                                <button data-v="Dawn" class="filter-btn active" style="flex:1;">Dawn</button>
+                                <button data-v="Day" class="filter-btn" style="flex:1;">Day</button>
+                                <button data-v="Dusk" class="filter-btn" style="flex:1;">Dusk</button>
+                                <button data-v="Night" class="filter-btn" style="flex:1;">Night</button>
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div class="control-group">
+                                <label>Wind Speed <span class="numeric-feedback" id="lbl-wind">32 km/h</span></label>
+                                <input type="range" id="in-wind" class="form-range-slider" min="0" max="75" value="32">
+                            </div>
+                            <div class="control-group">
+                                <label>Visibility <span class="numeric-feedback" id="lbl-vis">5 km</span></label>
+                                <input type="range" id="in-vis" class="form-range-slider" min="0.5" max="20" step="0.5"
+                                    value="5">
+                            </div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div class="control-group">
+                                <label>Flock Density</label>
+                                <select id="in-flock" class="form-input-field">
+                                    <option value="Single (1)">Single (1)</option>
+                                    <option value="Small (2-10)">Small (2-10)</option>
+                                    <option value="Moderate (11-100)" selected>Moderate (11-100)</option>
+                                    <option value="Large (>100)">Large (&gt;100)</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label>Species Size Class</label>
+                                <select id="in-species-size" class="form-input-field">
+                                    <option value="Small">Small (Passerine / Warbler)</option>
+                                    <option value="Medium">Medium (Raptor / Hawk)</option>
+                                    <option value="Large" selected>Large (Crane / Waterfowl)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Real-Time Meteorological Telemetry Sync (Open-Meteo Integration) -->
+                        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+                            <label
+                                style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-dim);display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+                                <i class="fa-solid fa-satellite-dish" style="color:var(--brand-primary);"></i>
+                                Real-Time Meteorological Sync (Open-Meteo API)
+                            </label>
+                            <div style="display:flex;gap:10px;">
+                                <select id="liveLocationSelect" class="form-input-field" style="flex:1;">
+                                    <option value="40.6413,-73.7781">New York &middot; JFK Int'l Airport (Atlantic
+                                        Flyway)</option>
+                                    <option value="41.9742,-87.9073">Chicago &middot; O'Hare ORD (Mississippi Flyway)
+                                    </option>
+                                    <option value="33.9416,-118.4085">Los Angeles &middot; LAX Int'l (Pacific Flyway)
+                                    </option>
+                                    <option value="29.9902,-95.3368">Houston &middot; George Bush IAH (Central Flyway)
+                                    </option>
+                                    <option value="37.7478,-121.6881">Altamont Pass Wind Farm Corridor, CA</option>
+                                    <option value="32.4487,-100.5283">Roscoe Wind Farm Facility, TX</option>
+                                </select>
+                                <button type="button" id="btn-fetch-live" class="btn-pill btn-primary-pill"
+                                    onclick="fetchLiveConditions()" style="white-space:nowrap;">
+                                    <i class="fa-solid fa-cloud-bolt"></i> Sync Live Data
+                                </button>
+
+                                <!-- AI Prediction -->
+  <button type="button"
+            id="btn-ai-predict"
+            class="btn-pill btn-primary-pill"
+            onclick="runLiveSimulation()"
+            style="white-space:nowrap;">
+        <i class="fa-solid fa-bolt"></i>
+        Run AI Prediction
+    </button>
+
+</div>
+                            </div>
+                            <div id="liveStatusMsg"
+                                style="font-size:11.5px;color:var(--brand-emerald);margin-top:8px;display:none;font-family:'IBM Plex Mono', monospace;">
+                                <i class="fa-solid fa-circle-check"></i> <span id="liveStatusText">Live meteorological
+                                    telemetry synchronized</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="meter-readout-card">
+                            <div id="gauge-svg"></div>
+                            <div class="meter-score-number mono" id="gauge-score">78</div>
+                            <div class="meter-severity-label" id="gauge-tier">HIGH RISK</div>
+                        </div>
+
+                        <div id="gauge-breakdown" style="margin-top:20px;"></div>
+
+                        <div
+                            style="margin-top:16px;background:var(--surface-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;font-size:12.5px;">
+                            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                                <span style="color:var(--text-dim)">Inference Confidence:</span>
+                                <strong class="mono" id="sim-conf" style="color:var(--brand-primary)">94.2%</strong>
+                            </div>
+                            <div style="display:flex;justify-content:space-between;">
+                                <span style="color:var(--text-dim)">Operational SOP:</span>
+                                <span id="sim-advisory" style="color:var(--brand-amber);font-weight:600;">Enact approach
+                                    speed curtailment</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Machine Learning Model Benchmarks -->
+        <section class="content-section" id="models">
+            <div class="section-header-block">
+                <span class="section-badge-tag">Model Validation</span>
+                <h2 class="section-main-title">Machine Learning Classification Benchmarks</h2>
+                <p class="section-lead-text">Evaluation metrics across five classification models trained using 5-fold
+                    cross-validation on verified FAA and USGS datasets.</p>
+            </div>
+
+            <div class="model-cards-layout" id="model-cards-container"></div>
+
+            <div class="grid-2col" style="margin-top:20px;">
+                <div class="panel-box">
+                    <div class="panel-header">
+                        <div>
+                            <div class="panel-title-text">Predictive Feature Importance</div>
+                            <div class="panel-subtitle-text">SHAP-aligned relative gain weights across tree models</div>
+                        </div>
+                    </div>
+                    <div id="features-bars-container"></div>
+                </div>
+
+                <div class="panel-box" style="padding:0;overflow:hidden;">
+                    <div style="padding: 20px 24px 14px 24px;border-bottom:1px solid var(--border);">
+                        <div class="panel-title-text">Comparative Metrics Table</div>
+                        <div class="panel-subtitle-text">Holdout test split evaluation scores</div>
+                    </div>
+                    <div class="table-container">
+                        <table class="enterprise-table" id="models-table">
+                            <thead>
+                                <tr>
+                                    <th>Model Architecture</th>
+                                    <th>Accuracy</th>
+                                    <th>Precision</th>
+                                    <th>Recall</th>
+                                    <th>F1 Score</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Early Warning Advisory & 7-Day Forecast Matrix -->
+        <section class="content-section" id="advisory">
+            <div class="section-header-block">
+                <span class="section-badge-tag">Early Warning Protocol</span>
+                <h2 class="section-main-title">Upcoming 7-Day Predictive Risk Forecast &amp; Live Sightings</h2>
+                <p class="section-lead-text">Predictive forward modeling combining real-time 7-day meteorological
+                    forecasts (Open-Meteo) with Cornell Lab eBird aeroecology telemetry.</p>
+            </div>
+
+            <div class="grid-2col" style="margin-bottom: 24px;">
+                <!-- 7-Day Weather & Collision Risk Curve -->
+                <div class="panel-box">
+                    <div class="panel-header">
+                        <div>
+                            <div class="panel-title-text">7-Day Forward Collision Risk Forecast</div>
+                            <div class="panel-subtitle-text">Synthesized from projected wind velocity &amp;
+                                precipitation anomalies</div>
+                        </div>
+                        <span class="status-badge-chip medium" id="forecast-loc-tag">JFK Airport</span>
+                    </div>
+                    <div class="chart-box" style="height:240px;">
+                        <canvas id="forecastRiskChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Live Cornell eBird Aeroecology Sightings Feed -->
+                <div class="panel-box">
+                    <div class="panel-header">
+                        <div>
+                            <div class="panel-title-text">Cornell Lab eBird &middot; Live Aeroecology Feed</div>
+                            <div class="panel-subtitle-text" id="ebird-source-tag">Live observations in active airspace
+                                corridor</div>
+                        </div>
+                        <span class="status-badge-chip low"><i class="fa-solid fa-feather"></i> Bio-Radar</span>
+                    </div>
+                    <div id="ebird-sightings-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+                </div>
+            </div>
+
+            <div id="advisory-list"></div>
+        </section>
+
+        <!-- Mitigation SOP Playbook -->
+        <section class="content-section">
+            <div class="section-header-block">
+                <span class="section-badge-tag">Operational SOPs</span>
+                <h2 class="section-main-title">Standard Operating Mitigation Playbook</h2>
+                <p class="section-lead-text">Actionable operational guidelines designed to minimize collision hazard
+                    without disrupting flight operations or energy generation.</p>
+            </div>
+
+            <div class="grid-3col" id="mitigation-cards-container"></div>
+        </section>
+
+        <!-- Historical Flight Logs -->
+        <section class="content-section" id="records">
+            <div class="section-header-block">
+                <span class="section-badge-tag">Incident Archive</span>
+                <h2 class="section-main-title">Historical Collision Telemetry Log</h2>
+                <p class="section-lead-text">Query and export verified historical strike records stored in the SQLite
+                    database.</p>
+            </div>
+
+            <div class="panel-box" style="padding: 20px;">
+                <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+                    <input type="text" id="log-search" class="form-input-field" style="flex:1;min-width:240px;"
+                        placeholder="Search species, facility, incident ID, or flyway...">
+                    <select id="log-filter-type" class="form-input-field" style="width:auto;">
+                        <option value="">All Facility Types</option>
+                        <option value="airport">Airports Only</option>
+                        <option value="wind_farm">Wind Farms Only</option>
+                    </select>
+                    <select id="log-filter-fatal" class="form-input-field" style="width:auto;">
+                        <option value="">All Severity Outcomes</option>
+                        <option value="true">Fatal / High Risk Only</option>
+                        <option value="false">Non-Fatal Only</option>
+                    </select>
+                    <a href="/api/report/csv" class="btn-pill btn-primary-pill">
+                        <i class="fa-solid fa-download"></i> Export CSV
+                    </a>
+                </div>
+
+                <div class="table-container"
+                    style="max-height:420px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);">
+                    <table class="enterprise-table">
+                        <thead>
+                            <tr>
+                                <th>Incident ID</th>
+                                <th>Date</th>
+                                <th>Facility</th>
+                                <th>Species</th>
+                                <th>Flight Phase</th>
+                                <th>Wind Speed</th>
+                                <th>Visibility</th>
+                                <th>Outcome</th>
+                            </tr>
+                        </thead>
+                        <tbody id="log-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Enterprise Footer -->
+    <footer class="app-footer">
+        <div class="app-shell">
+            <div class="footer-grid-layout">
+                <div class="footer-brand-summary">
+                    <h4>AvianGuard Intelligence Matrix</h4>
+                    <p>Enterprise aeroecology analytics platform combining biometric radar telemetry, geospatial
+                        infrastructure mapping, and calibrated machine learning models to safeguard wildlife and
+                        infrastructure.</p>
+                </div>
+                <div class="footer-column">
+                    <h5>Platform Endpoints</h5>
+                    <ul>
+                        <li><a href="/api/metrics" target="_blank">&middot; Real-Time Summary API</a></li>
+                        <li><a href="/api/geodata" target="_blank">&middot; Geospatial GIS JSON</a></li>
+                        <li><a href="/api/models" target="_blank">&middot; Model Metrics &amp; Benchmarks</a></li>
+                        <li><a href="/api/report/pdf" target="_blank">&middot; Automated PDF Dispatch</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h5>Data Standards Compliance</h5>
+                    <ul>
+                        <li>&middot; FAA Wildlife Strike Database</li>
+                        <li>&middot; USGS Wind Turbine Inventory</li>
+                        <li>&middot; OpenFlights Global Waypoints</li>
+                        <li>&middot; IUCN Red List of Threatened Species</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom-bar">
+                <div>&copy; 2026 AvianGuard . All rights reserved.</div>
+                <div>Wildlife Collision Risk Intelligence Platform</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Client Scripts & Chart.js Visualizations -->
+    <script>
+        const COLORS = {
+            blue: "#3B82F6",
+            indigo: "#6366F1",
+            emerald: "#10B981",
+            amber: "#F59E0B",
+            rose: "#F43F5E",
+            slate: "#8E9FB8",
+            border: "#1F2C44"
+        };
+        const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+        const REF_DATA = {
+            monthly: {
+                labels: MONTHS,
+                all: [1200, 1800, 4200, 9400, 8900, 2100, 1600, 3800, 8400, 9100, 3600, 1500],
+                fatal: [480, 720, 1890, 4700, 4300, 920, 680, 1600, 4100, 4600, 1500, 610],
+                airport: [650, 950, 2100, 4600, 4300, 1100, 850, 1900, 4200, 4500, 1800, 800],
+                wind_farm: [550, 850, 2100, 4800, 4600, 1000, 750, 1900, 4200, 4600, 1800, 700]
+            },
+            hourly: [43, 35, 52, 32, 53, 45, 34, 32, 35, 33, 38, 33, 31, 39, 42, 33, 36, 31, 26, 26, 12, 42, 45, 45],
+            compass: {
+                Atlantic: [19, 10, 27, 69, 55, 21, 16, 33, 60, 70, 20, 23],
+                Central: [17, 13, 21, 76, 69, 12, 13, 27, 70, 74, 30, 16]
+            },
+            species: [
+                { species: "American Kestrel", conservation_status: "Least Concern", count: 91, weighted: 91.0 },
+                { species: "Swainson's Thrush", conservation_status: "Least Concern", count: 81, weighted: 81.0 },
+                { species: "Red-tailed Hawk", conservation_status: "Least Concern", count: 79, weighted: 79.0 },
+                { species: "Snow Goose", conservation_status: "Least Concern", count: 79, weighted: 79.0 },
+                { species: "Sandhill Crane", conservation_status: "Least Concern", count: 76, weighted: 76.0 },
+                { species: "Yellow Warbler", conservation_status: "Least Concern", count: 76, weighted: 76.0 },
+                { species: "Ruby-throated Hummingbird", conservation_status: "Least Concern", count: 72, weighted: 72.0 },
+                { species: "Canada Goose", conservation_status: "Least Concern", count: 64, weighted: 64.0 },
+                { species: "Bald Eagle", conservation_status: "Least Concern", count: 63, weighted: 63.0 },
+                { species: "Barn Swallow", conservation_status: "Least Concern", count: 63, weighted: 63.0 },
+                { species: "Common Nighthawk", conservation_status: "Near Threatened", count: 37, weighted: 51.8 },
+                { species: "Short-eared Owl", conservation_status: "Near Threatened", count: 35, weighted: 49.0 },
+                { species: "Bobolink", conservation_status: "Near Threatened", count: 28, weighted: 39.2 },
+                { species: "Golden Eagle", conservation_status: "Vulnerable", count: 13, weighted: 23.4 },
+                { species: "Whooping Crane", conservation_status: "Endangered", count: 4, weighted: 10.0 }
+            ],
+            facilities: [
+                { facility_name: "Coastal Marsh Turbines", facility_type: "wind_farm", flyway: "Central", incidents: 91, fatal: 46, fatality_rate: 50.5, capacity: "40 Turbines (80 MW)" },
+                { facility_name: "Bluewing Wind Park", facility_type: "wind_farm", flyway: "Atlantic", incidents: 84, fatal: 43, fatality_rate: 51.2, capacity: "63 Turbines (126 MW)" },
+                { facility_name: "Gulf Coast Executive", facility_type: "airport", flyway: "Central", incidents: 81, fatal: 29, fatality_rate: 35.8, capacity: "2 Class-B Runways" },
+                { facility_name: "Cedar Point Regional", facility_type: "airport", flyway: "Atlantic", incidents: 80, fatal: 29, fatality_rate: 36.2, capacity: "2 Commercial Runways" },
+                { facility_name: "Meridian Plains Wind", facility_type: "wind_farm", flyway: "Central", incidents: 78, fatal: 41, fatality_rate: 52.6, capacity: "120 Turbines (240 MW)" },
+                { facility_name: "Ridgeline Summit Wind", facility_type: "wind_farm", flyway: "Atlantic", incidents: 76, fatal: 44, fatality_rate: 57.9, capacity: "72 Turbines (144 MW)" },
+                { facility_name: "Tallgrass Wind Farm", facility_type: "wind_farm", flyway: "Central", incidents: 66, fatal: 33, fatality_rate: 50.0, capacity: "84 Turbines (168 MW)" },
+                { facility_name: "Shoreline Ridge Wind", facility_type: "wind_farm", flyway: "Atlantic", incidents: 65, fatal: 33, fatality_rate: 50.8, capacity: "56 Turbines (112 MW)" }
+            ]
+        };
+
+
+
+        // Fetch Metrics & Update KPIs + Dynamic Analytics from SQLite
+        async function loadMetrics() {
+            try {
+                const res = await fetch('/api/metrics');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('kpi-total').textContent = data.total_records.toLocaleString();
+                    document.getElementById('kpi-fatal').textContent = data.high_risk_pct + '%';
+                    document.getElementById('kpi-sites').textContent = (data.total_airports_mapped + data.total_turbines_mapped).toLocaleString();
+                }
+
+                const analyticsRes = await fetch('/api/analytics');
+                if (analyticsRes.ok) {
+                    const aData = await analyticsRes.json();
+                    if (aData.monthly && monthlyChartInstance) {
+                        const counts = aData.monthly.map(m => m.count);
+                        monthlyChartInstance.data.datasets[1].data = counts;
+                        monthlyChartInstance.update();
+                    }
+                }
+            } catch (e) {
+                console.warn("Using offline data cache fallback:", e);
+            }
+        }
+        loadMetrics();
+
+        // High-Resolution Leaflet GIS with Dynamic Multi-Layer Support
+        let map, simMarker;
+        let incidentLayerGroup, turbineLayerGroup, airportLayerGroup, flywayLayerGroup, habitatLayerGroup;
+        let selectedLat = 39.50, selectedLon = -98.35;
+
+        function initMap() {
+            map = L.map('map-container', {
+                center: [39.50, -98.35],
+                zoom: 4,
+                zoomControl: true
+            });
+
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Earthstar Geographics',
+                maxZoom: 18
+            }).addTo(map);
+
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 18,
+                opacity: 0.65
+            }).addTo(map);
+
+            incidentLayerGroup = L.layerGroup().addTo(map);
+            turbineLayerGroup = L.layerGroup().addTo(map);
+            airportLayerGroup = L.layerGroup().addTo(map);
+            flywayLayerGroup = L.layerGroup().addTo(map);
+            habitatLayerGroup = L.layerGroup().addTo(map);
+
+            const pinIcon = L.divIcon({
+                className: 'custom-radar-pin',
+                html: `<div style="position:relative;width:22px;height:22px;">
+                    <div style="position:absolute;inset:0;background:${COLORS.blue};border-radius:50%;opacity:0.35;"></div>
+                    <div style="position:absolute;inset:5px;background:#FFFFFF;border-radius:50%;box-shadow:0 0 10px ${COLORS.blue};"></div>
+                </div>`,
+                iconSize: [22, 22],
+                iconAnchor: [11, 11]
+            });
+
+            simMarker = L.marker([selectedLat, selectedLon], { icon: pinIcon }).addTo(map);
+
+            map.on('click', (e) => {
+                selectedLat = e.latlng.lat;
+                selectedLon = e.latlng.lng;
+                simMarker.setLatLng([selectedLat, selectedLon]);
+                document.getElementById('tel-coords').textContent = `${selectedLat.toFixed(2)}°N, ${selectedLon.toFixed(2)}°W`;
+            })
+
+            loadGeodata();
+        }
+
+        function toggleMapLayer(layerName) {
+            const btn = document.getElementById(`layer-${layerName}`);
+            let targetGroup;
+            if (layerName === 'incidents') targetGroup = incidentLayerGroup;
+            else if (layerName === 'turbines') targetGroup = turbineLayerGroup;
+            else if (layerName === 'airports') targetGroup = airportLayerGroup;
+            else if (layerName === 'flyways') targetGroup = flywayLayerGroup;
+            else if (layerName === 'habitats') targetGroup = habitatLayerGroup;
+
+            if (map.hasLayer(targetGroup)) {
+                map.removeLayer(targetGroup);
+                btn.classList.remove('active');
+            } else {
+                map.addLayer(targetGroup);
+                btn.classList.add('active');
+            }
+        }
+
+        async function loadGeodata() {
+            try {
+                const res = await fetch('/api/geodata?limit=600');
+                if (res.ok) {
+                    const data = await res.json();
+
+                    // 1. Strike Incidents
+                    if (data.incidents) {
+                        data.incidents.forEach(inc => {
+                            const isHigh = inc.risk === 'High';
+                            L.circleMarker([inc.lat, inc.lon], {
+                                radius: isHigh ? 5 : 3.5,
+                                fillColor: isHigh ? COLORS.rose : COLORS.blue,
+                                color: isHigh ? '#FECDD3' : '#BFDBFE',
+                                weight: 1,
+                                opacity: 0.85,
+                                fillOpacity: 0.8
+                            }).bindPopup(`<b>Incident Telemetry</b><br>Severity: ${inc.risk}<br>Altitude: ${inc.alt} ft<br>Flock: ${inc.flock}`).addTo(incidentLayerGroup);
+                        });
+                    }
+
+                    // 2. Wind Turbines
+                    if (data.turbines) {
+                        data.turbines.forEach(t => {
+                            L.circleMarker([t.lat, t.lon], {
+                                radius: 7,
+                                fillColor: COLORS.amber,
+                                color: '#FFFFFF',
+                                weight: 1.5,
+                                fillOpacity: 0.9
+                            }).bindPopup(`<b>⚡ Wind Turbine Asset</b><br>${t.name}<br>Capacity: ${t.cap_kw} kW`).addTo(turbineLayerGroup);
+                        });
+                    }
+
+                    // 3. Airports
+                    if (data.airports) {
+                        data.airports.forEach(a => {
+                            L.circleMarker([a.lat, a.lon], {
+                                radius: 5.5,
+                                fillColor: COLORS.indigo,
+                                color: '#FFFFFF',
+                                weight: 1.2,
+                                fillOpacity: 0.85
+                            }).bindPopup(`<b>✈️ Commercial Airport</b><br>${a.name} (${a.iata})<br>Elevation: ${a.alt_ft} ft`).addTo(airportLayerGroup);
+                        });
+                    }
+
+                    // 4. North American Migratory Flyways
+                    if (data.flyways) {
+                        data.flyways.forEach(f => {
+                            L.circle([f.lat, f.lon], {
+                                radius: 280000,
+                                color: '#3884FF',
+                                fillColor: '#3884FF',
+                                fillOpacity: 0.12,
+                                weight: 2,
+                                dashArray: '6, 6'
+                            }).bindPopup(`
+                                <div style="font-size:12px;">
+                                    <strong style="color:#3884FF;font-size:13px;">🦅 ${f.name}</strong><br>
+                                    <b>Region:</b> ${f.region}<br>
+                                    <b>Species:</b> ${f.species}<br>
+                                    <b>Spring Migration:</b> ${f.spring_peak}<br>
+                                    <b>Annual Migrants:</b> ~${f.birds_millions} Million Birds<br>
+                                    <b>Key Refuges:</b> ${f.refuges}
+                                </div>
+                            `).addTo(flywayLayerGroup);
+                        });
+                    }
+
+                    // 5. Satellite Remote-Sensing NDVI Habitats (Sentinel-2 / Landsat)
+                    if (data.satellite_habitats) {
+                        data.satellite_habitats.forEach(h => {
+                            L.circleMarker([h.lat, h.lon], {
+                                radius: 9,
+                                fillColor: COLORS.emerald,
+                                color: '#FFFFFF',
+                                weight: 2,
+                                fillOpacity: 0.85
+                            }).bindPopup(`
+                                <div style="font-size:12px;">
+                                    <strong style="color:#10B981;font-size:13px;">🛰️ ${h.region}</strong><br>
+                                    <b>Satellite Sensor:</b> ${h.satellite}<br>
+                                    <b>NDVI Index:</b> ${h.ndvi} (High Vegetation)<br>
+                                    <b>Canopy Cover:</b> ${h.canopy_pct}%<br>
+                                    <b>Wetland Distance:</b> ${h.wetland_km} km<br>
+                                    <b>Avian Suitability:</b> ${(h.suitability * 100).toFixed(0)}%
+                                </div>
+                            `).addTo(habitatLayerGroup);
+                        });
+                    }
+                }
+            } catch (e) {
+                console.warn("Geodata stream fallback:", e);
+            }
+        }
+
+        // Initialize Chart.js Visualizations (Replacing SVG graphs with modern clean canvas charts)
+        let monthlyChartInstance, radarChartInstance, diurnalChartInstance, donutChartInstance;
+
+        function initCharts() {
+            // 1. Monthly Incidents Bar + Line Chart
+            const ctxMonthly = document.getElementById('seasonMonthlyChart').getContext('2d');
+            monthlyChartInstance = new Chart(ctxMonthly, {
+                type: 'bar',
+                data: {
+                    labels: MONTHS,
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: 'Fatal Strikes',
+                            data: REF_DATA.monthly.fatal,
+                            borderColor: COLORS.rose,
+                            borderWidth: 2.5,
+                            pointBackgroundColor: COLORS.rose,
+                            pointRadius: 3.5,
+                            tension: 0.35,
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Total Incidents',
+                            data: REF_DATA.monthly.all,
+                            backgroundColor: 'rgba(59, 130, 246, 0.45)',
+                            borderColor: COLORS.blue,
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            yAxisID: 'y'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: COLORS.slate, font: { family: 'Plus Jakarta Sans', size: 12 } }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(31, 44, 68, 0.5)' },
+                            ticks: { color: COLORS.slate, font: { family: 'IBM Plex Mono', size: 11 } }
+                        },
+                        y: {
+                            grid: { color: 'rgba(31, 44, 68, 0.5)' },
+                            ticks: { color: COLORS.slate, font: { family: 'IBM Plex Mono', size: 11 } }
+                        }
+                    }
+                }
+            });
+
+            // 2. Flyway Radar Chart
+            const ctxRadar = document.getElementById('flywayRadarChart').getContext('2d');
+            radarChartInstance = new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: MONTHS,
+                    datasets: [
+                        {
+                            label: 'Atlantic Flyway',
+                            data: REF_DATA.compass.Atlantic,
+                            borderColor: COLORS.blue,
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            pointBackgroundColor: COLORS.blue,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Central Flyway',
+                            data: REF_DATA.compass.Central,
+                            borderColor: COLORS.amber,
+                            backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                            pointBackgroundColor: COLORS.amber,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: COLORS.slate, font: { family: 'Plus Jakarta Sans', size: 12 } }
+                        }
+                    },
+                    scales: {
+                        r: {
+                            grid: { color: 'rgba(31, 44, 68, 0.6)' },
+                            angleLines: { color: 'rgba(31, 44, 68, 0.6)' },
+                            pointLabels: { color: COLORS.slate, font: { family: 'IBM Plex Mono', size: 10 } },
+                            ticks: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // 3. Diurnal Hourly Bar Chart
+            const ctxDiurnal = document.getElementById('diurnalHourlyChart').getContext('2d');
+            const hourlyColors = REF_DATA.hourly.map((_, h) => (h >= 21 || h < 6) ? 'rgba(59, 130, 246, 0.7)' : 'rgba(245, 158, 11, 0.6)');
+            diurnalChartInstance = new Chart(ctxDiurnal, {
+                type: 'bar',
+                data: {
+                    labels: Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`),
+                    datasets: [{
+                        label: 'Incidents by Hour',
+                        data: REF_DATA.hourly,
+                        backgroundColor: hourlyColors,
+                        borderRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: COLORS.slate, font: { family: 'IBM Plex Mono', size: 10 }, maxRotation: 0 }
+                        },
+                        y: {
+                            grid: { color: 'rgba(31, 44, 68, 0.5)' },
+                            ticks: { color: COLORS.slate, font: { family: 'IBM Plex Mono', size: 10 } }
+                        }
+                    }
+                }
+            });
+
+            // 4. Sector Donut Chart
+            const ctxDonut = document.getElementById('sectorDonutChart').getContext('2d');
+            donutChartInstance = new Chart(ctxDonut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Airports', 'Wind Turbines'],
+                    datasets: [{
+                        data: [26500, 30478],
+                        backgroundColor: [COLORS.blue, COLORS.amber],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '72%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // Season Filter Toggle Handler
+        document.querySelectorAll('#season-toggle button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#season-toggle button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const mode = btn.dataset.mode;
+                const data = mode === 'all' ? REF_DATA.monthly.all : (mode === 'airport' ? REF_DATA.monthly.airport : REF_DATA.monthly.wind_farm);
+                monthlyChartInstance.data.datasets[1].data = data;
+                monthlyChartInstance.update();
+            });
+        });
+
+        // Facilities Bar Rendering
+        (function renderFacilities() {
+            const el = document.getElementById('facility-bars-container');
+            const rows = REF_DATA.facilities;
+            const maxV = Math.max(...rows.map(r => r.incidents));
+            el.innerHTML = rows.map(r => {
+                const pct = (r.incidents / maxV) * 100;
+                const barColor = r.facility_type === 'wind_farm' ? 'var(--brand-amber)' : 'var(--brand-primary)';
+                return `
+                    <div style="display:grid;grid-template-columns:180px 1fr 65px;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13.5px;">
+                        <div style="color:var(--text-title);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.facility_name}</div>
+                        <div style="height:8px;background:var(--surface-elevated);border-radius:4px;overflow:hidden;">
+                            <div style="height:100%;background:${barColor};width:${pct}%;border-radius:4px;"></div>
+                        </div>
+                        <div class="mono" style="text-align:right;color:var(--text-muted);font-size:12.5px;">${r.incidents}</div>
+                    </div>
+                `;
+            }).join('');
+
+            const tbody = document.querySelector('#facility-table tbody');
+            tbody.innerHTML = rows.map(r => `
+                <tr>
+                    <td class="cell-highlight">${r.facility_name}</td>
+                    <td><span class="status-badge-chip ${r.facility_type === 'wind_farm' ? 'medium' : 'low'}">${r.facility_type === 'wind_farm' ? 'Wind Farm' : 'Airport'}</span></td>
+                    <td>${r.flyway}</td>
+                    <td class="cell-highlight mono">${r.incidents}</td>
+                    <td class="mono">${r.fatal}</td>
+                    <td class="cell-highlight mono" style="color:${r.fatality_rate > 50 ? 'var(--brand-rose)' : 'inherit'}">${r.fatality_rate}%</td>
+                    <td>${r.capacity}</td>
+                </tr>
+            `).join('');
+        })();
+
+        // Species Vulnerability Leaderboard
+        function statusBadge(s) {
+            if (s === 'Least Concern') return '<span class="status-badge-chip low">LC</span>';
+            if (s === 'Near Threatened') return '<span class="status-badge-chip medium">NT</span>';
+            if (s === 'Vulnerable') return '<span class="status-badge-chip high">VU</span>';
+            return '<span class="status-badge-chip high">EN</span>';
+        }
+        function renderSpecies(mode) {
+            const el = document.getElementById('species-bars-container');
+            let rows = [...REF_DATA.species];
+            const key = mode === 'weighted' ? 'weighted' : 'count';
+            rows.sort((a, b) => b[key] - a[key]);
+            const maxV = Math.max(...rows.map(r => r[key]));
+            el.innerHTML = rows.map(r => {
+                const pct = (r[key] / maxV) * 100;
+                const fillCol = r.conservation_status === 'Least Concern' ? 'var(--brand-primary)' : (r.conservation_status === 'Near Threatened' ? 'var(--brand-amber)' : 'var(--brand-rose)');
+                return `
+                    <div style="display:grid;grid-template-columns:220px 1fr 70px;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13.5px;">
+                        <div style="color:var(--text-title);font-weight:600;">${r.species} ${statusBadge(r.conservation_status)}</div>
+                        <div style="height:8px;background:var(--surface-elevated);border-radius:4px;overflow:hidden;">
+                            <div style="height:100%;background:${fillCol};width:${pct}%;border-radius:4px;"></div>
+                        </div>
+                        <div class="mono" style="text-align:right;color:var(--text-muted);font-size:12.5px;">${key === 'weighted' ? r[key].toFixed(1) : r[key]}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        renderSpecies('weighted');
+
+        document.querySelectorAll('#species-toggle button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#species-toggle button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderSpecies(btn.dataset.mode);
+            });
+        });
+
+        // Atmospheric Covariates
+        (function renderCorrelations() {
+            const cards = [
+                {
+                    title: 'Wind Speed & Shear Velocity', val: '+0.113',
+                    body: 'Higher wind speeds correlate directly with fatal strike outcomes. Strong shear gusts push flocks off stabilized migration corridors, compounding rotor-plane kinetic impact forces.'
+                },
+                {
+                    title: 'Approach Glide Visibility', val: '+0.035',
+                    body: 'Low visibility (< 5 km) degrades nocturnal visual obstacle perception, compounding collision risk around unlit meteorological towers and tall runway obstruction envelopes.'
+                },
+                {
+                    title: 'Diurnal vs. Night Severity', val: '45.5% Night',
+                    body: 'Nocturnal migrants account for nearly half of all logged collisions. Daytime strikes skew toward heavy-bodied raptors and geese with higher airframe damage potential.'
+                }
+            ];
+            document.getElementById('correlation-cards-container').innerHTML = cards.map(c => `
+                <div class="panel-box">
+                    <div class="panel-title-text">${c.title}</div>
+                    <div style="font-size:26px;font-weight:700;margin:10px 0;color:var(--brand-primary);" class="mono">${c.val}</div>
+                    <p style="color:var(--text-muted);font-size:13.5px;line-height:1.6;">${c.body}</p>
+                </div>
+            `).join('');
+        })();
+
+        // Risk Simulator & Radial Gauge
+        let selectedTimeOfDay = "Dawn";
+        document.querySelectorAll('#in-daynight button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#in-daynight button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedTimeOfDay = btn.dataset.v;
+
+            });
+        });
+
+        document.getElementById('in-alt').addEventListener('input', (e) => {
+            document.getElementById('lbl-alt').textContent = parseInt(e.target.value).toLocaleString() + ' ft';
+
+        });
+        document.getElementById('in-speed').addEventListener('input', (e) => {
+            document.getElementById('lbl-speed').textContent = e.target.value + ' kts';
+
+        });
+        document.getElementById('in-wind').addEventListener('input', (e) => {
+            document.getElementById('lbl-wind').textContent = e.target.value + ' km/h';
+
+        });
+        document.getElementById('in-vis').addEventListener('input', (e) => {
+            document.getElementById('lbl-vis').textContent = e.target.value + ' km';
+
+        });
+        document.getElementById('in-model').addEventListener('change', runLiveSimulation);
+        document.getElementById('in-season').addEventListener('change', runLiveSimulation);
+        document.getElementById('in-flock').addEventListener('change', runLiveSimulation);
+        document.getElementById('in-species-size').addEventListener('change', runLiveSimulation);
+
+        function tierFor(score) {
+            if (score < 30) return { label: 'LOW RISK', color: COLORS.emerald };
+            if (score < 60) return { label: 'MEDIUM RISK', color: COLORS.amber };
+            return { label: 'HIGH RISK', color: COLORS.rose };
+        }
+
+        function renderGauge(score, color) {
+            const size = 200, c = size / 2, r = 80;
+            const pct = Math.min(Math.max(score / 100, 0), 1);
+            const circumference = 2 * Math.PI * r * 0.75;
+            const offset = circumference * (1 - pct);
+            document.getElementById('gauge-svg').innerHTML = `
+                <svg viewBox="0 0 ${size} ${size}" width="200" height="200">
+                    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${COLORS.border}" stroke-width="12"
+                        stroke-dasharray="${circumference} ${2 * Math.PI * r}" stroke-dashoffset="0"
+                        transform="rotate(135 ${c} ${c})" stroke-linecap="round"/>
+                    <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="${color}" stroke-width="12"
+                        stroke-dasharray="${circumference} ${2 * Math.PI * r}" stroke-dashoffset="${offset}"
+                        transform="rotate(135 ${c} ${c})" stroke-linecap="round" style="transition:stroke-dashoffset .3s, stroke .3s;"/>
+                </svg>
+            `;
+        }
+
+        async function runLiveSimulation() {
+            const predictBtn = document.getElementById('btn-ai-predict');
+predictBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Predicting...';
+predictBtn.disabled = true;
+            const seasonMap = {
+                Spring_Migration: "Spring",
+                Fall_Migration: "Fall",
+                Summer_Breeding: "Summer",
+                Winter: "Winter"
+            };
+
+            const seasonValue = document.getElementById('in-season').value;
+            const altitude = parseFloat(document.getElementById('in-alt').value) || 50;
+            const wind = parseFloat(document.getElementById('in-wind').value) || 0;
+            const visibility = parseFloat(document.getElementById('in-vis').value) || 5;
+
+            // These names match the actual season-model dataset features.
+            const payload = {
+                altitude: altitude,
+                avg_wind_speed_kmh: wind,
+                avg_visibility_km: visibility,
+                season: seasonMap[seasonValue] || seasonValue,
+                wildlife_size: document.getElementById('in-species-size').value,
+                conditions_sky: "Some Cloud",
+                latitude: selectedLat,
+                longitude: selectedLon,
+                flight_month: seasonValue === "Spring_Migration" ? 4 :
+                              seasonValue === "Fall_Migration" ? 9 :
+                              seasonValue === "Summer_Breeding" ? 7 : 1,
+                is_high_altitude: altitude > 3000,
+                is_migration_season: 1
+            };
+
+            try {
+                const res = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) throw new Error(`Prediction API returned ${res.status}`);
+
+                const result = await res.json();
+                predictBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Prediction Complete';
+setTimeout(() => {
+    predictBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> Run AI Prediction';
+    predictBtn.disabled = false;
+}, 1500);
+
+                const predictedRisk = result.risk_level || "Low";
+                const probabilities = result.probabilities || {};
+                const confidence = Math.max(
+                    Number(probabilities[predictedRisk] || 0),
+                    0
+                );
+
+                // Convert model probability to a visual 0-100 risk index.
+                const scoreMap = { Low: 22, Medium: 55, High: 88 };
+                const score = scoreMap[predictedRisk] || 22;
+                const tier = tierFor(score);
+
+                document.getElementById('gauge-score').textContent = score;
+                document.getElementById('gauge-score').style.color = tier.color;
+                document.getElementById('gauge-tier').textContent = `${predictedRisk.toUpperCase()} RISK`;
+                document.getElementById('gauge-tier').style.color = tier.color;
+                renderGauge(score, tier.color);
+
+                document.getElementById('sim-conf').textContent = confidence.toFixed(1) + '%';
+
+                let advisory = "Standard corridor monitoring active";
+                if (predictedRisk === "High") {
+                    advisory = "High-risk conditions detected — increase monitoring and apply operational mitigation.";
+                } else if (predictedRisk === "Medium") {
+                    advisory = "Moderate collision risk — maintain enhanced wildlife monitoring.";
+                }
+                document.getElementById('sim-advisory').textContent = advisory;
+
+                const factors = [
+                    { factor: "Flight Altitude", weight: Math.min(altitude / 3000, 1) },
+                    { factor: "Wind Speed", weight: Math.min(wind / 35, 1) },
+                    { factor: "Visibility", weight: Math.max(0, 1 - visibility / 20) },
+                    { factor: "Species Size", weight:
+                        document.getElementById('in-species-size').value === 'Large' ? 0.9 :
+                        document.getElementById('in-species-size').value === 'Medium' ? 0.6 : 0.35 },
+                    { factor: "Seasonal Factor", weight:
+                        seasonValue.includes("Migration") ? 0.9 : 0.4 }
+                ];
+
+                document.getElementById('gauge-breakdown').innerHTML = factors.map(f => {
+                    const pct = Math.round(Math.min(Math.max(f.weight, 0), 1) * 100);
+                    return `
+                        <div style="display:grid;grid-template-columns:130px 1fr 36px;gap:10px;align-items:center;padding:5px 0;">
+                            <div style="font-size:11.5px;color:var(--text-dim);">${f.factor}</div>
+                            <div style="height:6px;background:var(--surface);border-radius:3px;overflow:hidden;">
+                                <div style="height:100%;background:var(--brand-primary);width:${pct}%;"></div>
+                            </div>
+                            <div class="mono" style="font-size:11.5px;color:var(--text-muted);text-align:right;">${pct}%</div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (e) {
+                console.warn("Prediction API fallback:", e);
+                document.getElementById('sim-conf').textContent = 'API OFFLINE';
+                predictBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> Run AI Prediction';
+predictBtn.disabled = false;
+            }
+        }
+
+        // Real-Time Open-Meteo Weather Synchronization
+        async function fetchLiveConditions() {
+            const locSelect = document.getElementById('liveLocationSelect');
+            const [lat, lon] = locSelect.value.split(',');
+            const statusMsg = document.getElementById('liveStatusMsg');
+            const statusText = document.getElementById('liveStatusText');
+            const btn = document.getElementById('btn-fetch-live');
+
+            statusMsg.style.display = 'block';
+            statusMsg.style.color = 'var(--brand-amber)';
+            statusText.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Polling Open-Meteo satellite feed...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/api/live-conditions?lat=${lat}&lon=${lon}`);
+                if (!res.ok) throw new Error('Live weather service unavailable');
+
+                const json = await res.json();
+                const d = json.data;
+
+                // Sync sliders and UI labels
+                const windSlider = document.getElementById('in-wind');
+                const visSlider = document.getElementById('in-vis');
+
+                windSlider.value = Math.min(Math.max(d.wind_speed_kmh, 0), 75);
+                document.getElementById('lbl-wind').textContent = windSlider.value + ' km/h';
+
+                visSlider.value = Math.min(Math.max(d.visibility_km, 0.5), 20);
+                document.getElementById('lbl-vis').textContent = visSlider.value + ' km';
+
+                // Update internal coordinate reference
+                selectedLat = parseFloat(lat);
+                selectedLon = parseFloat(lon);
+
+                statusMsg.style.color = 'var(--brand-emerald)';
+                statusText.innerHTML = `<i class="fa-solid fa-circle-check"></i> Synced: Wind ${d.wind_speed_kmh} km/h, Vis ${d.visibility_km} km (${d.timestamp})`;
+
+                // Trigger forecast and aeroecology refresh
+                const locLabel = locSelect.options[locSelect.selectedIndex].text.split('(')[0].trim();
+                loadForecastRisk(selectedLat, selectedLon, locLabel);
+                loadEbirdSightings(selectedLat, selectedLon);
+
+                // Trigger instant inference with synced real-time data
+
+            } catch (err) {
+                console.error("Live fetch error:", err);
+                statusMsg.style.color = 'var(--brand-rose)';
+                statusText.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Telemetry sync timeout. Using local calibration.';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // ML Model Benchmarks
+        async function loadModels() {
+            try {
+                const res = await fetch('/api/models');
+                if (res.ok) {
+                    const data = await res.json();
+
+                    const container = document.getElementById('model-cards-container');
+                    container.innerHTML = data.models.map((m, idx) => `
+                        <div class="model-tile-card ${idx === 0 ? 'active' : ''}" onclick="selectModelCard('${m.Model}', this)">
+                            <div class="model-name">
+                                <span>${m.Model}</span>
+                                <i class="fa-solid fa-check" style="font-size:11px;opacity:0.6;"></i>
+                            </div>
+                            <div class="model-f1 mono">${(m.Weighted_F1 * 100).toFixed(1)}%</div>
+                            <div class="model-meta">Accuracy: ${(m.Accuracy * 100).toFixed(1)}% &middot; ROC: ${(m.ROC_AUC * 100).toFixed(1)}%</div>
+                        </div>
+                    `).join('');
+
+                    const tbody = document.querySelector('#models-table tbody');
+                    tbody.innerHTML = data.models.map(m => `
+                        <tr>
+                            <td class="cell-highlight">${m.Model}</td>
+                            <td class="cell-highlight mono">${(m.Accuracy * 100).toFixed(2)}%</td>
+                            <td class="mono">${(m.Precision * 100).toFixed(2)}%</td>
+                            <td class="mono">${(m.Recall * 100).toFixed(2)}%</td>
+                            <td class="cell-highlight mono" style="color:var(--brand-primary)">${(m.Weighted_F1 * 100).toFixed(2)}%</td>
+                        </tr>
+                    `).join('');
+
+                    if (data.top_features) {
+                        const featEl = document.getElementById('features-bars-container');
+                        const feats = data.top_features.slice(0, 8);
+                        const maxImp = Math.max(...feats.map(f => f.Importance));
+                        featEl.innerHTML = feats.map(f => `
+                            <div style="display:grid;grid-template-columns:180px 1fr 60px;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:13px;">
+                                <div style="color:var(--text-title);font-weight:500;">${f.Feature.replace(/_/g, ' ')}</div>
+                                <div style="height:6px;background:var(--surface-elevated);border-radius:3px;overflow:hidden;">
+                                    <div style="height:100%;background:var(--brand-indigo);width:${(f.Importance / maxImp) * 100}%;"></div>
+                                </div>
+                                <div class="mono" style="text-align:right;color:var(--text-muted);font-size:11.5px;">${(f.Importance * 100).toFixed(1)}%</div>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (e) {
+                console.warn("Models API fallback:", e);
+            }
+        }
+        loadModels();
+
+        function selectModelCard(modelName, el) {
+            document.querySelectorAll('.model-tile-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('in-model').value = modelName;
+
+        }
+
+        // Forward-Looking Advisory
+        (function renderAdvisories() {
+            const advisories = [
+                { daysOut: 12, fac: "Cedar Point Regional", type: "airport", flyway: "Atlantic", window: "Sep 20", score: 84, tier: "High Risk" },
+                { daysOut: 18, fac: "Meridian Plains Wind", type: "wind_farm", flyway: "Central", window: "Sep 26", score: 88, tier: "High Risk" },
+                { daysOut: 24, fac: "Bluewing Wind Park", type: "wind_farm", flyway: "Atlantic", window: "Oct 02", score: 79, tier: "Medium Risk" },
+                { daysOut: 29, fac: "Gulf Coast Executive", type: "airport", flyway: "Central", window: "Oct 07", score: 72, tier: "Medium Risk" },
+                { daysOut: 35, fac: "Coastal Marsh Turbines", type: "wind_farm", flyway: "Central", window: "Oct 13", score: 65, tier: "Moderate" }
+            ];
+
+            document.getElementById('advisory-list').innerHTML = advisories.map(a => `
+                <div class="advisory-row-card">
+                    <div class="advisory-days-badge">
+                        <div class="n mono">${a.daysOut}</div>
+                        <div class="u">DAYS</div>
+                    </div>
+                    <div>
+                        <div style="font-size:14.5px;font-weight:700;color:var(--text-title);">${a.fac} <span class="status-badge-chip ${a.type === 'wind_farm' ? 'medium' : 'low'}">${a.type === 'wind_farm' ? 'Wind Farm' : 'Airport'}</span></div>
+                        <div style="font-size:12.5px;color:var(--text-muted);margin-top:2px;">Projected Peak Window &asymp; ${a.window} &middot; ${a.flyway} Flyway &middot; Hazard Index ${a.score}/100</div>
+                    </div>
+                    <div>
+                        <span class="status-badge-chip ${a.score > 80 ? 'high' : 'medium'}">${a.tier}</span>
+                    </div>
+                </div>
+            `).join('');
+        })();
+
+        // Mitigation SOP Playbook
+        (function renderMitigations() {
+            const cards = [
+                {
+                    idx: "SOP-01 &middot; Wind Energy Networks",
+                    title: "Automated Smart Curtailment",
+                    body: "Dynamically feather turbine rotor blades during predicted peak nocturnal migration hours when wind speeds exceed 15 km/h to slash blade-sweep mortality by up to 60%."
+                },
+                {
+                    idx: "SOP-02 &middot; Commercial Aviation",
+                    title: "Radar-Coupled Approach Sequencing",
+                    body: "Integrate continuous NEXRAD/BirdCast biometric radar feeds into air traffic advisory consoles to sequence aircraft departures away from dense ascending flocks."
+                },
+                {
+                    idx: "SOP-03 &middot; High-Conservation Corridors",
+                    title: "Species-Specific Pause Triggers",
+                    body: "When telemetry confirms endangered species activity (e.g. Whooping Crane, Golden Eagle), mandate immediate temporary operational slow-downs."
+                },
+                {
+                    idx: "SOP-04 &middot; Night Operations",
+                    title: "Adaptive Obstruction Lighting",
+                    body: "Utilize strobed and motion-synchronized lighting schemes to reduce bird disorientation and entrapment around nacelles and control towers."
+                },
+                {
+                    idx: "SOP-05 &middot; Airfield Habitat Control",
+                    title: "Vegetation & Water Attractant Controls",
+                    body: "Eliminate low-lying marsh seeds and standing water pooling near runway safety areas to prevent daytime foraging flock aggregations."
+                },
+                {
+                    idx: "SOP-06 &middot; Sensor Telemetry Validation",
+                    title: "Acoustic &amp; Thermal Sensor Calibration",
+                    body: "Deploy autonomous thermal cameras and acoustic nocturnal-flight-call detectors across perimeter fences to continuously refine model weights."
+                }
+            ];
+
+            document.getElementById('mitigation-cards-container').innerHTML = cards.map(c => `
+                <div class="panel-box">
+                    <div style="font-size:11.5px;color:var(--brand-primary);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;font-weight:600;">${c.idx}</div>
+                    <div class="panel-title-text" style="margin-bottom:8px;">${c.title}</div>
+                    <p style="color:var(--text-muted);font-size:13.5px;line-height:1.6;">${c.body}</p>
+                </div>
+            `).join('');
+        })();
+
+        // Historical Incident Log Table
+        const SAMPLE_LOGS = [
+            { id: "BC-00861", date: "2025-12-30", facility: "Ridgeline Summit Wind", type: "wind_farm", species: "Swainson's Thrush", phase: "Nacelle / Tower", wind: "15.3 km/h", vis: "7.1 km", fatal: false },
+            { id: "BC-00532", date: "2025-12-28", facility: "Shoreline Ridge Wind", type: "wind_farm", species: "Canada Goose", phase: "Rotor Sweep Zone", wind: "9.5 km/h", vis: "8.6 km", fatal: true },
+            { id: "BC-00531", date: "2025-12-27", facility: "Shoreline Ridge Wind", type: "wind_farm", species: "Snow Goose", phase: "Nacelle / Tower", wind: "23.7 km/h", vis: "6.8 km", fatal: true },
+            { id: "BC-00694", date: "2025-12-27", facility: "Meridian Plains Wind", type: "wind_farm", species: "Snow Goose", phase: "Rotor Sweep Zone", wind: "15.9 km/h", vis: "8.2 km", fatal: true },
+            { id: "BC-00140", date: "2025-12-25", facility: "Prairie Junction Intl", type: "airport", species: "Sandhill Crane", phase: "Approach / Landing", wind: "2.7 km/h", vis: "7.7 km", fatal: false },
+            { id: "BC-00339", date: "2025-12-22", facility: "Gulf Coast Executive", type: "airport", species: "Swainson's Thrush", phase: "Approach / Landing", wind: "9.1 km/h", vis: "0.5 km", fatal: false },
+            { id: "BC-00785", date: "2025-12-19", facility: "Coastal Marsh Turbines", type: "wind_farm", species: "Ruby-throated Hummingbird", phase: "Met Mast", wind: "20.5 km/h", vis: "3.6 km", fatal: true },
+            { id: "BC-00080", date: "2025-12-12", facility: "Cedar Point Regional", type: "airport", species: "Snow Goose", phase: "Takeoff / Climb", wind: "8.9 km/h", vis: "4.2 km", fatal: true },
+            { id: "BC-00467", date: "2025-11-26", facility: "Tallgrass Wind Farm", type: "wind_farm", species: "Bald Eagle", phase: "Rotor Sweep Zone", wind: "13.2 km/h", vis: "10.3 km", fatal: true },
+            { id: "BC-00337", date: "2025-11-22", facility: "Gulf Coast Executive", type: "airport", species: "Bobolink", phase: "Takeoff / Climb", wind: "17.1 km/h", vis: "2.7 km", fatal: true },
+            { id: "BC-00856", date: "2025-10-06", facility: "Ridgeline Summit Wind", type: "wind_farm", species: "Whooping Crane", phase: "Rotor Sweep Zone", wind: "24.3 km/h", vis: "13.0 km", fatal: true },
+            { id: "BC-00855", date: "2025-10-04", facility: "Ridgeline Summit Wind", type: "wind_farm", species: "Golden Eagle", phase: "Met Mast", wind: "12.0 km/h", vis: "4.8 km", fatal: true }
+        ];
+
+        function renderLogTable() {
+            const search = document.getElementById('log-search').value.toLowerCase();
+            const typeFilter = document.getElementById('log-filter-type').value;
+            const fatalFilter = document.getElementById('log-filter-fatal').value;
+
+            const filtered = SAMPLE_LOGS.filter(r => {
+                if (typeFilter && r.type !== typeFilter) return false;
+                if (fatalFilter && String(r.fatal) !== fatalFilter) return false;
+                if (search) {
+                    const text = `${r.id} ${r.facility} ${r.species} ${r.phase}`.toLowerCase();
+                    if (!text.includes(search)) return false;
+                }
+                return true;
+            });
+
+            document.getElementById('log-body').innerHTML = filtered.map(r => `
+                <tr>
+                    <td class="cell-highlight mono">${r.id}</td>
+                    <td>${r.date}</td>
+                    <td class="cell-highlight">${r.facility}</td>
+                    <td>${r.species}</td>
+                    <td>${r.phase}</td>
+                    <td class="mono">${r.wind}</td>
+                    <td class="mono">${r.vis}</td>
+                    <td><span class="status-badge-chip ${r.fatal ? 'high' : 'low'}">${r.fatal ? 'Fatal Strike' : 'Non-Fatal'}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        document.getElementById('log-search').addEventListener('input', renderLogTable);
+        document.getElementById('log-filter-type').addEventListener('change', renderLogTable);
+        document.getElementById('log-filter-fatal').addEventListener('change', renderLogTable);
+        renderLogTable();
+
+        // 7-Day Forecast Risk Chart
+        let forecastChartInstance;
+        async function loadForecastRisk(lat = 40.6413, lon = -73.7781, locLabel = "JFK Airport") {
+            try {
+                document.getElementById('forecast-loc-tag').textContent = locLabel;
+                const res = await fetch(`/api/forecast-risk?lat=${lat}&lon=${lon}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const dates = data.forecast.map(f => f.date.slice(5));
+                    const riskScores = data.forecast.map(f => f.predicted_risk_score);
+                    const windSpeeds = data.forecast.map(f => f.wind_max_kmh);
+
+                    const ctx = document.getElementById('forecastRiskChart').getContext('2d');
+                    if (forecastChartInstance) forecastChartInstance.destroy();
+
+                    forecastChartInstance = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: dates,
+                            datasets: [
+                                {
+                                    label: 'Predicted Risk Index',
+                                    data: riskScores,
+                                    borderColor: COLORS.rose,
+                                    backgroundColor: 'rgba(244, 63, 94, 0.12)',
+                                    fill: true,
+                                    tension: 0.35,
+                                    yAxisID: 'y'
+                                },
+                                {
+                                    label: 'Peak Wind (km/h)',
+                                    data: windSpeeds,
+                                    borderColor: COLORS.blue,
+                                    borderDash: [4, 4],
+                                    fill: false,
+                                    tension: 0.3,
+                                    yAxisID: 'y1'
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: { mode: 'index', intersect: false },
+                            plugins: {
+                                legend: { labels: { color: COLORS.textMuted, font: { size: 11 } } }
+                            },
+                            scales: {
+                                x: { grid: { color: COLORS.border }, ticks: { color: COLORS.textMuted } },
+                                y: {
+                                    min: 0, max: 100,
+                                    grid: { color: COLORS.border },
+                                    ticks: { color: COLORS.rose, callback: v => v + '%' }
+                                },
+                                y1: {
+                                    position: 'right',
+                                    grid: { drawOnChartArea: false },
+                                    ticks: { color: COLORS.blue, callback: v => v + ' km/h' }
+                                }
+                            }
+                        }
+                    });
+                }
+            } catch (e) {
+                console.warn("Forecast API fallback:", e);
+            }
+        }
+
+        // Live eBird Aeroecology Sightings Feed
+        async function loadEbirdSightings(lat = 40.6413, lon = -73.7781) {
+            try {
+                const res = await fetch(`/api/ebird-sightings?lat=${lat}&lon=${lon}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('ebird-source-tag').textContent = data.source;
+                    const container = document.getElementById('ebird-sightings-list');
+                    container.innerHTML = data.sightings.map(s => `
+                        <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:12.5px;">
+                            <div>
+                                <div style="font-weight:700;color:var(--text-title);">${s.species_name} <span style="font-size:11px;color:var(--text-dim);font-style:italic;">(${s.scientific_name})</span></div>
+                                <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;"><i class="fa-solid fa-location-dot" style="color:var(--brand-primary);font-size:10px;"></i> ${s.loc_name} &middot; ${s.obs_date}</div>
+                            </div>
+                            <span class="status-badge-chip ${s.how_many > 20 ? 'high' : 'medium'} mono" style="font-size:11px;">
+                                <i class="fa-solid fa-dove"></i> ${s.how_many} Count
+                            </span>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                console.warn("eBird API fallback:", e);
+            }
+        }
+
+        // RBAC Authentication State & Methods
+        let currentUser = JSON.parse(localStorage.getItem('avian_user') || 'null');
+        let authToken = localStorage.getItem('avian_token') || '';
+
+        function updateAuthUI() {
+            const roleBadge = document.getElementById('current-user-label');
+            const pdfBtn = document.getElementById('btn-export-pdf');
+            const retrainPanel = document.getElementById('admin-retrain-panel');
+
+            if (currentUser && authToken) {
+                roleBadge.textContent = `${currentUser.role}: ${currentUser.full_name.split(' ')[0]}`;
+                pdfBtn.href = `/api/report/pdf?role=${encodeURIComponent(currentUser.role === 'Admin' ? 'Executive Leadership' : currentUser.role)}`;
+                
+                // Show retrain panel only for Admin
+                if (retrainPanel) {
+                    retrainPanel.style.display = currentUser.role === 'Admin' ? 'block' : 'none';
+                }
+            } else {
+                roleBadge.textContent = "Role: Public Viewer";
+                pdfBtn.href = `/api/report/pdf?role=Executive%20Leadership`;
+                if (retrainPanel) retrainPanel.style.display = 'none';
+            }
+        }
+
+        function openAuthModal() {
+            document.getElementById('auth-modal').style.display = 'flex';
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').style.display = 'none';
+        }
+
+        function fillDemoLogin(u, p) {
+            document.getElementById('login-username').value = u;
+            document.getElementById('login-password').value = p;
+        }
+
+        async function submitLogin() {
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            const errorEl = document.getElementById('login-error-msg');
+            errorEl.style.display = 'none';
+
+            if (!username || !password) {
+                errorEl.textContent = 'Please enter both username and password.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    authToken = data.access_token;
+                    currentUser = data.user;
+                    localStorage.setItem('avian_token', authToken);
+                    localStorage.setItem('avian_user', JSON.stringify(currentUser));
+                    updateAuthUI();
+                    closeAuthModal();
+                } else {
+                    const err = await res.json();
+                    errorEl.textContent = err.detail || 'Authentication failed.';
+                    errorEl.style.display = 'block';
+                }
+            } catch (e) {
+                errorEl.textContent = 'Network error connecting to authentication service.';
+                errorEl.style.display = 'block';
+            }
+        }
+
+        function logoutUser() {
+            authToken = '';
+            currentUser = null;
+            localStorage.removeItem('avian_token');
+            localStorage.removeItem('avian_user');
+            updateAuthUI();
+            closeAuthModal();
+        }
+
+        // Trigger Automated Background Model Retraining
+        async function triggerModelRetraining() {
+            const btn = document.getElementById('btn-retrain');
+            const feedback = document.getElementById('retrain-feedback');
+            btn.disabled = true;
+            feedback.style.display = 'block';
+            feedback.style.color = 'var(--brand-amber)';
+            feedback.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Triggering background retraining pipeline...';
+
+            try {
+                const res = await fetch('/api/retrain', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    feedback.style.color = 'var(--brand-emerald)';
+                    feedback.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${data.message}`;
+                    setTimeout(() => {
+                        loadModels();
+                        loadMetrics();
+                    }, 4000);
+                } else {
+                    const err = await res.json();
+                    feedback.style.color = 'var(--brand-rose)';
+                    feedback.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${err.detail || 'Retraining unauthorized.'}`;
+                }
+            } catch (e) {
+                feedback.style.color = 'var(--brand-rose)';
+                feedback.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Network error triggering retrain.';
+            } finally {
+                setTimeout(() => { btn.disabled = false; }, 3000);
+            }
+        }
+
+        // Initialize Map, Charts & Live Prediction on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            updateAuthUI();
+            initMap();
+            initCharts();
+            loadForecastRisk();
+            loadEbirdSightings();
+
+        });
+    </script>
+</body>
+
+</html>
